@@ -99,6 +99,7 @@ void print_help_and_exit(const char *name, bool err) {
 	int i = 0;
 	FILE *stream = err ? stderr : stdout;
 	fprintf(stream, "Usage: %s [-c programmer] [-S serialno] [-p partno] [-s memtype] [-b bytes] [-r|-w|-v] <filename>\n", name);
+	fprintf(stream, "(forked version!!!)\n");
 	fprintf(stream, "Options:\n");
 	fprintf(stream, "\t-?             Display this help\n");
 	fprintf(stream, "\t-c programmer  Specify programmer used (");
