@@ -173,6 +173,7 @@ bool usb_init(programmer_t *pgm, bool pgm_serialno_specified, char *pgm_serialno
 	char device[32];
 	char serialno[32];
 	char serialno_hex[64];
+	uint8_t port_number;
 
 
 	int r;
@@ -230,17 +231,27 @@ bool usb_init(programmer_t *pgm, bool pgm_serialno_specified, char *pgm_serialno
 				libusb_get_string_descriptor_ascii(tempHandle, desc.iProduct, (unsigned char*)device, sizeof(device));
 				libusb_get_string_descriptor_ascii(tempHandle, desc.iSerialNumber, (unsigned char*)serialno, sizeof(serialno));
 				serialno_to_hex(serialno, serialno_hex);
+				port_number = libusb_get_port_number(devs[i]);
 
 				// print programmer data if no serial number specified
 				if(!pgm_serialno_specified) {
-					fprintf(stderr, "Programmer %d: %s %s, Serial Number:%s\n", numOfProgrammers, vendor, device, serialno_hex);
+					fprintf(stderr, "Programmer %d: %s %s, Port Number: %d, Serial Number:%s\n", numOfProgrammers, vendor, device, port_number, serialno_hex);
 				}
 				else
 				{
 					// otherwise check if it's the correct one
-					if(0==strcmp(serialno_hex, pgm_serialno)) {
-						pgm->dev_handle = tempHandle;
-						break;
+					if (strncmp(pgm_serialno, "port:", 5) == 0) {
+						// we are comparing the port number
+						uint8_t provided_port = (uint8_t) atoi(pgm_serialno + strlen("port:"));
+						if (provided_port == port_number) {
+							pgm->dev_handle = tempHandle;
+							break;
+						}
+					} else {
+						if(0==strcmp(serialno_hex, pgm_serialno)) {
+							pgm->dev_handle = tempHandle;
+							break;
+						}
 					}
 				}
 				libusb_close(tempHandle);
